@@ -111,7 +111,7 @@ function generate() (
     // Need to continue monitoring events...
     defer("mousie();");
   )
-  // OK, we go tpoints, do the deed
+  // OK, we got points, do the deed
   : (
     // Set undo point here
     Undo_BeginBlock();
