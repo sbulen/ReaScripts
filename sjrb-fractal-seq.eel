@@ -1,0 +1,282 @@
+//
+// @description Mandelbrot set display & navigator...
+// @version 1.0.0
+// @author Shawn Bulen
+// @about This is a Fractal Sequencer.  It will display the Mandelbrot set, let you zoom around & select a line between any two points, then generate notes based on the numerical values between those two points.
+//
+
+// Global config vars & defaults
+boxside = 600;      // gfx box size in pixels
+meas = 16;          // Number of measures to generate
+pulse = 16;         // Number of divisions per measure, 1/x notes, defaults to 1/16th notes
+tpq = 960;          // This should match the MIDI system setting for ticks per quarter note
+maxits = 17;        // Max iterations for Mandelbrot algorithm
+escape_val = 4.75;  // Escape value for Mandelbrot algorithm
+init_corner_x = -2.75;   // Starting/reset value for upper left corner x in complex plane coordinates
+init_corner_y = -2.0;    // Starting/reset value for upper left corner y in complex plane coordinates
+init_side = 4.0;         // Starting/reset value for gfx box size in complex plane coordinates
+
+// Global working vars
+corner_x = -2.75;   // Current value for upper left corner x in complex plane coordinates
+corner_y = -2.0;    // Current value for upper left corner y in complex plane coordinates
+side = 4.0;         // Current value for gfx box size in complex plane coordinates
+selection_x1 = -1;  // from pt in pixels
+selection_y1 = -1;  // from pt in pixels
+selection_x2 = -1;  // to pt in pixels
+selection_y2 = -1;  // to pt in pixels
+
+// Function to set the color for the specified pixel...
+// Coordinates passed as params are in pixels.
+function setMandelColor(x, y) (
+
+  // Xlate from pixels to complex plane coords for Mandelbrot set purposes
+  this.x = corner_x + (x * side / boxside);
+  this.y = corner_y + (y * side / boxside);
+   
+  // Count how often until we fly away... If we fly away...
+  this.its = 0;
+  this.zx = 0;  //real
+  this.zy = 0;  //imag
+
+  // Iterate on the infamous z => z^2 + c
+  while ((this.its <= maxits) && (abs(this.zx) <= escape_val) && (abs(this.zy) <= escape_val)) (
+    this.tmpx = this.zx^2 - this.zy^2 + this.x;
+    this.tmpy = (2 * this.zx * this.zy) + this.y;
+
+    this.zx = this.tmpx;
+    this.zy = this.tmpy;
+
+    this.its += 1;
+  );
+
+  // Set coords for graphics purposes
+  gfx_x = x;
+  gfx_y = y;
+
+  // Finally set that pixel based on z & its...
+  this.its >= maxits
+    ? gfx_setpixel(0, 0, 0)   // No escape - Mandelbrot set shown as black
+    : gfx_setpixel(abs(this.zx)/escape_val, this.its/maxits, abs(this.zy)/escape_val);
+);
+
+// Function to return color info for the specified position.
+// Coordinates passed as params are complex plane coordinates, not pixels.
+// Will return zreal & zimaginary & iterations upon escape.
+function getMandelColor(cx, cy) (
+
+  // Count how often until we fly away... If we fly away...
+  this.its = 0;
+  this.zx = 0;  //real
+  this.zy = 0;  //imag
+
+  // Iterate on the infamous z => z^2 + c
+  while ((this.its <= maxits) && (abs(this.zx) <= escape_val) && (abs(this.zy) <= escape_val)) (
+    this.tmpx = this.zx^2 - this.zy^2 + cx;
+    this.tmpy = (2 * this.zx * this.zy) + cy;
+
+    this.zx = this.tmpx;
+    this.zy = this.tmpy;
+
+    this.its += 1;
+  );
+
+// return array with zreal, zimag, its
+  this.result["zx"] = abs(this.zx);
+  this.result["zy"] = abs(this.zy);
+  this.result["its"] = this.its;
+  this.result;
+);
+
+// Simply loop thru each pixel & paint the box!
+function refresh() (
+  // x values
+  curr_x = 0;
+  loop (boxside,
+   // y values
+    curr_y = 0;
+    loop (boxside,
+      // Once per pixel displayed...
+      setMandelColor(curr_x, curr_y);
+      curr_y += 1;
+    );
+    curr_x += 1;
+  );
+);
+
+// Generate the MIDI tracks based on the line selection!
+function generate() (
+  // First, confirm that we have endpoints to work with...
+  ((selection_x1 == -1) || (selection_y1 == -1) ||(selection_x2 == -1) ||(selection_y2 == -1)) ? (
+    MB("No line selected...", "Fractal Sequencer", 0);
+    // Need to continue monitoring events...
+    defer("mousie();");
+  )
+  // OK, we go tpoints, do the deed
+  : (
+    // Set undo point here
+    Undo_BeginBlock();
+
+    // Add 3 new MIDI tracks, each 'meas' measures in length
+    this.trackidx = CountTracks(0);
+    InsertTrackInProject(0, this.trackidx, 0);
+    this.zrealtrack = GetTrack(0, this.trackidx);
+    this.zrealitem = CreateNewMIDIItemInProj(this.zrealtrack, 0, meas * 4, 1);
+    this.zrealtake = GetActiveTake(this.zrealitem);
+
+    this.trackidx += 1;
+    InsertTrackInProject(0, this.trackidx, 0);
+    this.zimagtrack = GetTrack(0, this.trackidx);
+    this.zimagitem = CreateNewMIDIItemInProj(this.zimagtrack, 0, meas * 4, 1);
+    this.zimagtake = GetActiveTake(this.zimagitem);
+
+    this.trackidx += 1;
+    InsertTrackInProject(0, this.trackidx, 0);
+    this.itstrack = GetTrack(0, this.trackidx);
+    this.itsitem = CreateNewMIDIItemInProj(this.itstrack, 0, meas * 4, 1);
+    this.itstake = GetActiveTake(this.itsitem);
+
+    // Spit 'em out... First, translate selection from pixels to coordinates...
+    this.cx1 = corner_x + ((selection_x1 / boxside) * side);
+    this.cy1 = corner_y + ((selection_y1 / boxside) * side);
+    this.cx2 = corner_x + ((selection_x2 / boxside) * side);
+    this.cy2 = corner_y + ((selection_y2 / boxside) * side);
+
+    // The size of each increment between here & there...
+    this.cxinc = (this.cx2 - this.cx1) / (meas * pulse);
+    this.cyinc = (this.cy2 - this.cy1) / (meas * pulse);
+    this.pos = 0;
+
+    // Using -1 to denote "no note value", or rest...
+    // Start the logic as if previous value was a rest...
+    this.prior_zx = -1; this.prior_zy = -1; this.prior_its = -1;
+
+    // Need vars for saving off start positions of notes...
+    this.zx_start = 0;
+    this.zy_start = 0;
+    this.its_start = 0;
+
+    // Loop thru 'meas' measures of '1/pulse' (e.g., 1/16th) notes plus one. 
+    // The 'plus one' allows us to close any open notes.
+    this.iterations = 0;
+    loop ((meas * pulse) + 1,
+      this.nums = getMandelColor(this.cx1, this.cy1);
+
+      // For the most part, gotta work with ints...  Its is already an int...
+      this.nums["zx"] = floor(this.nums["zx"]);
+      this.nums["zy"] = floor(this.nums["zy"]);
+
+      // Establish whether it's a rest or not.
+      // Black spots on chart = rests (> maxits); add rests at very end to close out any open notes.
+      ((this.nums["its"] > maxits) || this.iterations >= (meas * pulse)) ? (
+        this.nums["zx"] = -1; this.nums["zy"] = -1; this.nums["its"] = -1;
+      );
+
+      // If note value changed, end prior note & start new note, factoring in rests...
+      // If note value unchanged, extend prior note, i.e., do nothing.
+      // The three tracks are spread apart by an octave...  Lowest is its, best for bass...
+      (this.nums["zx"] != this.prior_zx) ? (
+        (this.prior_zx != -1) ? 
+          MIDI_InsertNote(this.zrealtake, 1, 0, this.zx_start, this.pos, 0, 54 + this.prior_zx, 100, 0);
+        this.zx_start = this.pos;
+      );
+      (this.nums["zy"] != this.prior_zy) ? (
+        (this.prior_zy != -1) ? 
+          MIDI_InsertNote(this.zimagtake, 1, 0, this.zy_start, this.pos, 1, 42 + this.prior_zy, 100, 0);
+        this.zy_start = this.pos;
+      );
+      (this.nums["its"] != this.prior_its) ? (
+        (this.prior_its != -1) ? 
+          MIDI_InsertNote(this.itstake, 1, 0, this.its_start, this.pos, 2, 30 + this.prior_its, 100, 0);
+        this.its_start = this.pos;
+      );
+
+      this.cx1 += this.cxinc;
+      this.cy1 += this.cyinc;
+      this.pos += tpq / 4;
+      this.prior_zx = this.nums["zx"]; this.prior_zy = this.nums["zy"]; this.prior_its = this.nums["its"];
+      this.iterations += 1;
+    );
+
+    MIDI_Sort(this.zrealtake);
+    MIDI_Sort(this.zimagtake);
+    MIDI_Sort(this.itstake);
+
+    Undo_EndBlock("Fractal Sequencer", 0);
+
+    // Let 'em know...
+    MB("MIDI Tracks added!", "Fractal Sequencer", 0);
+    gfx_quit();
+  )
+);
+
+// Mouse event handler...
+function mousie() (
+  this.flags = gfx_getchar(65536);
+
+  // Check for mouse alt left click, & set selection points
+  (((this.flags & 8) == 8) && (mouse_cap == 17)) ? (
+    // If setting the 2nd point, draw the line
+    ((selection_x1 >= 0) && (selection_y1 >= 0)) ? (
+      selection_x2 = mouse_x;
+      selection_y2 = mouse_y;
+      refresh();
+      gfx_line(selection_x1, selection_y1, selection_x2, selection_y2, 1.0);)
+    // ELSE you are setting (or resetting) the initial point
+    : (
+      selection_x1 = mouse_x;
+      selection_y1 = mouse_y;
+    );
+  )
+  // ELSE... Check for mouse left click, & zoom to clicked point
+  : (((this.flags & 8) == 8) && (mouse_cap == 1)) ? (
+    this.newside = side * .5;
+    corner_x += ((mouse_x / boxside) * side) - (this.newside / 2);
+    corner_y += ((mouse_y / boxside) * side) - (this.newside / 2);
+    side = this.newside;
+
+    selection_x1 = -1;  // from pt
+    selection_y1 = -1;  // from pt
+    selection_x2 = -1;  // to pt
+    selection_y2 = -1;  // to pt
+
+    refresh();
+  )
+  // ELSE... Check for mouse right click, & reset globals to initial state
+  : (((this.flags & 8) == 8) && (mouse_cap == 2)) ? (
+    corner_x = init_corner_x; // upper left corner x in units
+    corner_y = init_corner_y; // upper left corner y in units
+    side = init_side;         // gfx box size in units
+
+    selection_x1 = -1;  // from pt
+    selection_y1 = -1;  // from pt
+    selection_x2 = -1;  // to pt
+    selection_y2 = -1;  // to pt
+
+    refresh();
+  )
+  // ELSE... Check for mouse alt right click, & reset line selection
+  : (((this.flags & 8) == 8) && (mouse_cap == 18)) ? (
+    selection_x1 = -1;  // from pt
+    selection_y1 = -1;  // from pt
+    selection_x2 = -1;  // to pt
+    selection_y2 = -1;  // to pt
+
+    refresh();
+  );
+
+  // Only defer if gfx window is active; generate midi notes if enter pressed
+  this.char = gfx_getchar();
+  (this.char == 13)
+    ? generate()
+    : (this.char != -1) ? defer("mousie();")
+);
+
+// Setup the graphics box...
+gfx_init("Fractal Sequencer", boxside, boxside, 0 ,800, 200);
+
+// Paint the Mandelbrot set
+refresh();
+
+// Monitor the mouse for zooming
+mousie();
+

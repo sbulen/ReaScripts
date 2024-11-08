@@ -1,0 +1,72 @@
+//
+// @description MIDI note horn-type modulation
+// @version 1.0.0
+// @author Shawn Bulen
+// @about  Will add mod wheel events over time, increasing vibrato on long-held notes.  Not all voices do that, so adds a little character to dull tones...  This particular script works on all selected takes/tracks.  Not required to be working within the MIDI Editor, but your MIDI notes need to be selected.
+//
+
+// Some vars & user prompts...
+minccval = 10;
+maxccval = 127;
+startpct = 0.2;
+endpct = 0.6;
+shape_id = 2;
+beztension = 0.2;
+controller = 1;
+#retvals = "";
+
+sprintf(#retvals, "%d,%d,%f,%f,%d,%f,%d", minccval, maxccval, startpct, endpct, shape_id, beztension, controller);
+GetUserInputs("Insert Modulations", 7, "Start CC value, End CC value, Ramp start, Ramp end, Shape, Bez Tension, Controller", #retvals);
+
+match("%d,%d,%f,%f,%d,%f,%d", #retvals, minccval, maxccval, startpct, endpct, shape_id, beztension, controller);
+
+Undo_BeginBlock();
+
+// Get the list of selected MIDI notes
+// Loop thru MediaItems, then Takes, then Notes
+numItems = CountMediaItems(0);
+itemidx = 0;
+loop (numItems,
+  item = GetMediaItem(0, itemidx);
+  IsMediaItemSelected(item) ? (
+    numTakes = GetMediaItemNumTakes(item);
+
+    takeidx = 0;
+    loop (numTakes,
+      lastpos = 0;
+      take = GetMediaItemTake(item, takeidx);
+      MIDI_DisableSort(take);
+
+      noteidx = MIDI_EnumSelNotes(take, -1);
+      while (noteidx != -1) (
+        MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
+
+        // Try & handle overlapping notes somewhat gracefully...
+        ((selected == 1) && (startppqpos >= lastpos)) ? (
+          startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
+          endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
+          lastpos = endppqpos;
+
+          MIDI_InsertCC(take, selected, muted, startppqpos, 0xB0, chan, controller, minccval);
+          MIDI_InsertCC(take, selected, muted, startramp, 0xB0, chan, controller, minccval);
+
+          // Set shape on the ramp CC event; need to find last event inserted...
+          MIDI_CountEvts(take, notecnt, ccevtcnt, textsyxevtcnt);
+          MIDI_SetCCShape(take, ccevtcnt - 1, shape_id, beztension, true);
+
+          MIDI_InsertCC(take, selected, muted, endramp, 0xB0, chan, controller, maxccval);
+          MIDI_InsertCC(take, selected, muted, endppqpos, 0xB0, chan, controller, maxccval);
+        );  // no overlap
+
+        noteidx = MIDI_EnumSelNotes(take, noteidx);
+      );  // per selected note
+
+      MIDI_SORT(take);
+      takeidx += 1;
+    );  // per take
+  );  // is item selected
+  itemidx += 1;
+);  // per item
+
+Undo_EndBlock("Horn Modulation", 0);
+
