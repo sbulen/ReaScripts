@@ -8,6 +8,7 @@
 // Some vars & user prompts...
 minccval = 10;
 maxccval = 127;
+minnoteticks = 960;
 startpct = 0.2;
 endpct = 0.6;
 shape_id = 2;
@@ -15,10 +16,10 @@ beztension = 0.2;
 controller = 1;
 #retvals = "";
 
-sprintf(#retvals, "%d,%d,%f,%f,%d,%f,%d", minccval, maxccval, startpct, endpct, shape_id, beztension, controller);
-GetUserInputs("Insert Modulations", 7, "Start CC value, End CC value, Ramp start, Ramp end, Shape, Bez Tension, Controller", #retvals);
+sprintf(#retvals, "%d,%d,%d,%f,%f,%d,%f,%d", minccval, maxccval, minnoteticks, startpct, endpct, shape_id, beztension, controller);
+GetUserInputs("Insert Modulations", 7, "Start CC value, End CC value, Min duration in ticks, Ramp start, Ramp end, Shape, Bez Tension, Controller", #retvals);
 
-match("%d,%d,%f,%f,%d,%f,%d", #retvals, minccval, maxccval, startpct, endpct, shape_id, beztension, controller);
+match("%d,%d,%d,%f,%f,%d,%f,%d", #retvals, minccval, maxccval, minnoteticks, startpct, endpct, shape_id, beztension, controller);
 
 Undo_BeginBlock();
 
@@ -42,7 +43,7 @@ loop (numItems,
         MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
 
         // Try & handle overlapping notes somewhat gracefully...
-        ((selected == 1) && (startppqpos >= lastpos)) ? (
+        ((selected == 1) && (startppqpos >= lastpos) && ((endppqpos - startppqpos) >= minnoteticks)) ? (
           startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
           endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
           lastpos = endppqpos;
