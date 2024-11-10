@@ -43,20 +43,25 @@ loop (numItems,
         MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
 
         // Try & handle overlapping notes somewhat gracefully...
-        ((selected == 1) && (startppqpos >= lastpos) && ((endppqpos - startppqpos) >= minnoteticks)) ? (
-          startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
-          endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
-          lastpos = endppqpos;
-
+        ((selected == 1) && (startppqpos >= lastpos)) ? (
+          // Always bring start down to min, even for short notes, when they don't overlap
           MIDI_InsertCC(take, selected, muted, startppqpos, 0xB0, chan, controller, minccval);
-          MIDI_InsertCC(take, selected, muted, startramp, 0xB0, chan, controller, minccval);
 
-          // Set shape on the ramp CC event; need to find last event inserted...
-          MIDI_CountEvts(take, notecnt, ccevtcnt, textsyxevtcnt);
-          MIDI_SetCCShape(take, ccevtcnt - 1, shape_id, beztension, true);
+          // If note is long enough, do the ramp...
+          ((endppqpos - startppqpos) >= minnoteticks) ? (
+            startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
+            endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
+            lastpos = endppqpos;
 
-          MIDI_InsertCC(take, selected, muted, endramp, 0xB0, chan, controller, maxccval);
-          MIDI_InsertCC(take, selected, muted, endppqpos, 0xB0, chan, controller, maxccval);
+            MIDI_InsertCC(take, selected, muted, startramp, 0xB0, chan, controller, minccval);
+
+            // Set shape on the ramp CC event; need to find last event inserted...
+            MIDI_CountEvts(take, notecnt, ccevtcnt, textsyxevtcnt);
+            MIDI_SetCCShape(take, ccevtcnt - 1, shape_id, beztension, true);
+
+            MIDI_InsertCC(take, selected, muted, endramp, 0xB0, chan, controller, maxccval);
+            MIDI_InsertCC(take, selected, muted, endppqpos, 0xB0, chan, controller, maxccval);
+          );  // doing ramp
         );  // no overlap
 
         noteidx = MIDI_EnumSelNotes(take, noteidx);
