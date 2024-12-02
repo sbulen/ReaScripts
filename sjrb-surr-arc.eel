@@ -1,0 +1,142 @@
+//
+// @description MIDI surround automation - move sound in an arc/circle
+// @version 1.0.0
+// @author Shawn Bulen
+// @about  Will generate automation to drive Reaper's X-Y coordinates in the surround panner.  If MIDI notes are selected, rules will be applied per note.  If no MIDI notes are selected, rules will be applied for duration of the items selected.
+//
+
+// Global vars
+numItems = 0;
+itemidx = 0;
+item = 0;
+take = 0;
+noteidx = 0;
+offset = 0.00; // Starting phase in radians, need to keep original startphase value alone
+workfreq = 0.00; // Working freq, need to keep original freq value alone
+x_env = 0;
+y_env = 0;
+
+// User prompts...
+freq = 999;       // Relative per selection - this many cycles per note/selection duration....  (999=random)
+startphase = 999; // Starting phase in degrees, 0 = to the right...  (999=random)
+minfreq = -2;     // For random frequencies, min frequency
+maxfreq = 2;      // For random frequencies, max frequency
+mindur = .1;      // Minimum duration to process, in seconds
+timeinc = 100;    // (In milliseconds - low numbers = more events; high numbers = fewer events...
+
+#retvals = "";
+sprintf(#retvals, "%f,%f,%f,%f,%f,%d", freq, startphase, minfreq, maxfreq, mindur, timeinc);
+GetUserInputs("Insert Surround Automation", 6, "Frequency - 999=random, Start phase - 999=random, Min frequency (when random), Max frequency (when random), Min duration in sec, Time inc in ms", #retvals);
+match("%f,%f,%f,%f,%f,%d", #retvals, freq, startphase, minfreq, maxfreq, mindur, timeinc);
+
+// A little helpful math & initializing for later...
+workfreq = freq;
+freq == 999 ? workfreq = minfreq + rand(maxfreq - minfreq);
+offset = startphase * 2.0 * $pi / 360.0;
+startphase == 999 ? offset = rand(2 * $pi);
+timeinc /= 1000;
+
+// Clear the envelopes for the range in question.
+// Range is passed as parameters & specified in project seconds.
+function initialize_envelopes(time_start, time_end) local(track trackfxix) (
+  track = GetMediaItem_Track(item);
+  trackfxix = TrackFX_AddByName(track, "ReaSurroundPan", 0, 1);
+
+  // 7 = "in 1 x", 8 = "in 1 y"
+  // This will create them if they don't exist & return the envelope ID
+  x_env = GetFXEnvelope(track, trackfxix, 7, 1);
+  y_env = GetFXEnvelope(track, trackfxix, 8, 1);
+
+  DeleteEnvelopePointRange(x_env, time_start, time_end);
+  DeleteEnvelopePointRange(y_env, time_start, time_end);
+);
+
+// Actually do the automation for specified time range
+function add_automation(time_start, time_len) local(curr_time curr_angle x_curr y_curr) (
+  (time_len >= mindur) ? (
+    initialize_envelopes(time_start, time_start + time_len);
+
+    startphase == 999 ? offset = rand(2 * $pi); // 999=random
+    freq == 999 ? workfreq = minfreq + rand(maxfreq - minfreq); // 999=random
+
+    curr_time = 0;
+    while (curr_time < time_len) (
+      curr_angle = (curr_time / time_len) * 2 * $pi * workfreq;
+      x_curr = (cos(curr_angle + offset) * 0.5) + 0.5;
+      y_curr = (sin(curr_angle + offset) * 0.5) + 0.5;
+      InsertEnvelopePoint(x_env, time_start + curr_time, x_curr, 0, 1, 1, false);
+      InsertEnvelopePoint(y_env, time_start + curr_time, y_curr, 0, 1, 1, false);
+      curr_time += timeinc;
+    );
+  );
+);
+
+// This is the routine for no MIDI notes found - just run the length of the item...
+function handle_item() local(time_start time_len) (
+  time_start = GetMediaItemInfo_Value(item, "D_POSITION");
+  time_len = GetMediaItemInfo_Value(item, "D_LENGTH");
+
+  add_automation(time_start, time_len);
+);
+
+// This is the routine for MIDI notes - do the thing once per selected note...
+function handle_notes() local(lastpos selected muted startppqpos endppqpos chan pitch vel) (
+  lastpos = 0;
+  selected = 0;
+  muted = 0;
+  startppqpos = 0;
+  endppqpos = 0;
+  chan = 0;
+  pitch = 0;
+  vel = 0;
+
+  // Note: noteidx is a global...
+  while (noteidx != -1) (
+    MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
+
+    // Try & handle overlapping notes somewhat gracefully...
+    ((selected == 1) && (startppqpos >= lastpos)) ? (
+
+      time_start = MIDI_GetProjTimeFromPPQPos(take, startppqpos);
+      time_len = MIDI_GetProjTimeFromPPQPos(take, endppqpos) - time_start;
+      add_automation(time_start, time_len);
+
+      lastpos = endppqpos;
+    );  // no overlap
+    noteidx = MIDI_EnumSelNotes(take, noteidx);
+  );  // per note
+);
+
+//
+// Start of script
+//
+Undo_BeginBlock();
+
+// Loop thru MediaItems, then Takes...
+numItems = CountMediaItems(0);
+
+itemidx = 0;
+loop (numItems,
+  item = GetMediaItem(0, itemidx);
+  IsMediaItemSelected(item) ? (
+    take = GetActiveTake(item);
+    source = GetMediaItemTake_Source(take);
+    GetMediaSourceType(source, #type);
+    noteidx = MIDI_EnumSelNotes(take, -1);
+
+    // No notes?  Process length of item...
+    // Notes selected?  Process each note...
+    ((strcmp(#type, "WAVE") == 0) || (noteidx == -1))
+      ? handle_item()
+      : handle_notes();
+
+  );  // is item selected
+  itemidx += 1;
+);  // per item
+
+// All automation added with nosort, so fix that up
+Envelope_SortPoints(x_env);
+Envelope_SortPoints(y_env);
+
+Undo_EndBlock("Insert Surround Automation", 0);
+
