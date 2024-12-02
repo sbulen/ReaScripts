@@ -30,46 +30,40 @@ itemidx = 0;
 loop (numItems,
   item = GetMediaItem(0, itemidx);
   IsMediaItemSelected(item) ? (
-    numTakes = GetMediaItemNumTakes(item);
+    lastpos = 0;
+    take = GetActiveTake(item);
+    MIDI_DisableSort(take);
 
-    takeidx = 0;
-    loop (numTakes,
-      lastpos = 0;
-      take = GetMediaItemTake(item, takeidx);
-      MIDI_DisableSort(take);
+    noteidx = MIDI_EnumSelNotes(take, -1);
+    while (noteidx != -1) (
+      MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
 
-      noteidx = MIDI_EnumSelNotes(take, -1);
-      while (noteidx != -1) (
-        MIDI_GetNote(take, noteidx, selected, muted, startppqpos, endppqpos, chan, pitch, vel);
+      // Try & handle overlapping notes somewhat gracefully...
+      ((selected == 1) && (startppqpos >= lastpos)) ? (
+        // Always bring start down to min, even for short notes, when they don't overlap
+        MIDI_InsertCC(take, selected, muted, startppqpos, 0xB0, chan, controller, minccval);
 
-        // Try & handle overlapping notes somewhat gracefully...
-        ((selected == 1) && (startppqpos >= lastpos)) ? (
-          // Always bring start down to min, even for short notes, when they don't overlap
-          MIDI_InsertCC(take, selected, muted, startppqpos, 0xB0, chan, controller, minccval);
+        // If note is long enough, do the ramp...
+        ((endppqpos - startppqpos) >= minnoteticks) ? (
+          startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
+          endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
+          lastpos = endppqpos;
 
-          // If note is long enough, do the ramp...
-          ((endppqpos - startppqpos) >= minnoteticks) ? (
-            startramp = startppqpos + floor((endppqpos - startppqpos) * startpct);
-            endramp =  startppqpos + floor((endppqpos - startppqpos) * endpct);
-            lastpos = endppqpos;
+          MIDI_InsertCC(take, selected, muted, startramp, 0xB0, chan, controller, minccval);
 
-            MIDI_InsertCC(take, selected, muted, startramp, 0xB0, chan, controller, minccval);
+          // Set shape on the ramp CC event; need to find last event inserted...
+          MIDI_CountEvts(take, notecnt, ccevtcnt, textsyxevtcnt);
+          MIDI_SetCCShape(take, ccevtcnt - 1, shape_id, beztension, true);
 
-            // Set shape on the ramp CC event; need to find last event inserted...
-            MIDI_CountEvts(take, notecnt, ccevtcnt, textsyxevtcnt);
-            MIDI_SetCCShape(take, ccevtcnt - 1, shape_id, beztension, true);
+          MIDI_InsertCC(take, selected, muted, endramp, 0xB0, chan, controller, maxccval);
+          MIDI_InsertCC(take, selected, muted, endppqpos, 0xB0, chan, controller, maxccval);
+        );  // doing ramp
+      );  // no overlap
 
-            MIDI_InsertCC(take, selected, muted, endramp, 0xB0, chan, controller, maxccval);
-            MIDI_InsertCC(take, selected, muted, endppqpos, 0xB0, chan, controller, maxccval);
-          );  // doing ramp
-        );  // no overlap
+      noteidx = MIDI_EnumSelNotes(take, noteidx);
+    );  // per selected note
 
-        noteidx = MIDI_EnumSelNotes(take, noteidx);
-      );  // per selected note
-
-      MIDI_SORT(take);
-      takeidx += 1;
-    );  // per take
+    MIDI_SORT(take);
   );  // is item selected
   itemidx += 1;
 );  // per item
