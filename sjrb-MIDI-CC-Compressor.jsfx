@@ -1,6 +1,6 @@
-desc: MIDI CC Compressor
+desc: MIDI CC Compressor 1.2
 author: sjrb
-version: 1.1
+version: 1.2
 about:
   MIDI CC Compressor
 
@@ -20,7 +20,7 @@ in_pin:none
 out_pin:none
 
 @slider
-boostsq = (boost+1)^2;
+boost2 = (6-boost)/6;
 
 @block
 while (midirecv(mpos, msg1, msg2, msg3)) (
@@ -28,9 +28,12 @@ while (midirecv(mpos, msg1, msg2, msg3)) (
   msg_chan = msg1 & 0x0F;
   // Check channel - 'all' (16) or requested channel
   (chan == 16 || chan == msg_chan) ? (
-    // Check if a CC message (11), & the requested CC, & boost requested...
-    ((msg == 11) && (ccsel == msg2) && (boost > 0)) ? (
-      msg3 = floor(maxval-((maxval-msg3)/(maxval^(1-(boost^-1))))^(boost));
+    // Check if a CC message (11), & the requested CC...
+    ((msg == 11) && (ccsel == msg2)) ? (
+      // Bezier calc; boost determines how much is pushed to maxval
+      (msg3 >= floor(boost2*maxval))
+        ? msg3 = maxval
+        : msg3 = floor(2*maxval*((msg3/boost2/maxval)^0.5) - (msg3/boost2));
       msg3 > maxval ? msg3 = maxval;
       msg3 < 0 ? msg3 = 0;
     )
