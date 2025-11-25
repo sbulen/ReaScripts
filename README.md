@@ -11,6 +11,7 @@ Some of my Reaper Scripts.
 
 ## Effects:
 * sjrb-MIDI-CC-Compressor.jsfx - This .jsfx acts as a MIDI CC compressor and fattens up the CC curve, by increasing the input CC values.
+* sjrb-MIDI-ChordGen.jsfx - This .jsfx will generate chords in realtime.  Just specify a chord, scale & intervals, then play a key.
 
 ## Requirements:
 * Reaper...  No other libraries or utilities are required for these scripts.
