@@ -1,0 +1,171 @@
+desc: MIDI Harmonist
+author: sjrb
+version: 1.0
+about:
+  MIDI Harmonist.
+
+  Play a note, and the requested intervals are also played, per the requested root, scale & intervals.
+
+  Scales are defined as Reaper scale .txt files, and should be in the ix_scales folder.
+  This script assumes one scale per file.
+
+tags: MIDI processing transposition transpose scales modes chords
+
+slider1:0<0,11,1{C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B}>Key
+slider2:/ix_scales:Major.txt:Scale
+slider3:1<0,1,1{No,Yes}>Play played note
+slider4:1<0,1,1{No,Yes}>Fudge passing notes
+slider5:1<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider6:7<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
+slider7:3<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider8:6<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
+slider9:5<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider10:5<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
+
+// pins - set to none when there is no audio
+in_pin:none
+out_pin:none
+
+// init
+// init - executed once on load & playback start
+// init
+@init
+// Keep these safely away from each other...
+scale=0;
+chord_spos = 50;
+chord_vel = 100;
+
+// slider
+// slider - executed whenever sliders change
+// slider
+@slider
+root = slider1;
+played = slider3;
+fudge = slider4;
+chord_spos[0] = slider5 + 1;
+chord_vel[0] = (slider6 + 3) * 10;
+chord_spos[1] = slider7 + 1;
+chord_vel[1] = (slider8 + 3) * 10;
+chord_spos[2] = slider9 + 1;
+chord_vel[2] = (slider10 + 3) * 10;
+
+// block
+// block - executed once per block
+// block
+@block
+
+//
+// functions - local to @block
+//
+function get_note_info(passed_note) (
+  // Figure out chromatic offset from specified root
+  passed_cpos = passed_note%12 - root;
+  (passed_cpos < 0) ? (passed_cpos += 12);
+
+  // Is it within our specified scale?
+  // 0=false, 1=true
+  note_info["in_scale"] = 0;
+  note_info["spos"] = 0;
+  note_info["cpos"] = passed_cpos;
+  note_info["sf"] = 0;
+  spos = 0;
+  while ((note_info["in_scale"] == 0) && (spos < scalesize) && (passed_cpos >= scale[spos])) (
+    (passed_cpos == scale[spos]) ? (
+      note_info["in_scale"] = 1;
+      note_info["spos"] = spos;
+    );
+    spos += 1;
+  );
+  // Deal with passing notes...
+  ((fudge == 1) && (note_info["in_scale"] == 0)) ? (
+    // cpos is beyond end of scale - closer to last scale note or octave?
+    (spos == scalesize) ? (
+      ((passed_cpos - scale[spos - 1]) <= (12 - passed_cpos)) ? (
+        // sharp above prior scale note
+        note_info["spos"] = spos - 1;
+        note_info["sf"] = passed_cpos - scale[spos - 1];
+      ):(
+        // flat below 
+        note_info["spos"] = spos;
+        note_info["sf"] = passed_cpos - 12;
+      );
+    // cpos is between two notes in the scale - closer to which?
+    ):(
+      ((passed_cpos - scale[spos - 1]) <= (scale[spos] - passed_cpos)) ? (
+        // sharp above prior scale note
+        note_info["spos"] = spos - 1;
+        note_info["sf"] = passed_cpos - scale[spos - 1];
+      ):(
+        // flat below last scale note checked
+        note_info["spos"] = spos;
+        note_info["sf"] = passed_cpos - scale[spos];
+      );
+    );
+  );
+  note_info;
+);
+
+// Check bounds - ensure it's between 0 & 127.
+function check_bounds(passed_val) (
+  (passed_val < 0) ? (passed_val = 0);
+  (passed_val > 127) ? (passed_val = 127);
+  passed_val;
+);
+
+// Build the chord, based on the user input and the location of the played note
+// within the defined scale.
+function spit_out_chord(note_info) (
+  // Tied to the number of sliders we have to build the chord
+  ix = -1;
+  while (ix < 2) (
+    ix += 1;
+    // Exclude NA
+    (chord_spos[ix] < 13) ? (
+      scale_position = note_info["spos"] + chord_spos[ix];
+      // Need to account for exceeding the # of notes in the scale (e.g., a 9th is an octave + a 2nd)
+      octs = floor(scale_position/scalesize);
+      // Here's where we finally do the scale lookup...
+      interval = scale[scale_position%scalesize];
+      // Note the scales give you intervals relative to root, so you gotta offset from root...
+      note = msg2 - note_info["cpos"] + (octs * 12) + interval + note_info["sf"];
+      vel = floor(chord_vel[ix] * msg3 / 100);
+      // Quick sanity checks...
+      note = check_bounds(note);
+      vel = check_bounds(vel);
+      ((fudge == 1) || (note_info["in_scale"] == 1)) ? (
+        midisend(mpos, msg1, note, vel);
+      );
+    );
+  );
+);
+
+//
+// Main logic starts here...
+//
+while (midirecv(mpos, msg1, msg2, msg3)) (
+  msg = msg1 >> 4;
+  ((msg == 8) || (msg == 9)) ? (
+    // Got a note!
+    // If requested, play played note
+    (played == 1) ? (
+      midisend(mpos, msg1, msg2, msg3);
+    );
+    note_info = get_note_info(msg2);
+    spit_out_chord(note_info);
+  ):(
+    // Not a note, send it on
+    midisend(mpos, msg1, msg2, msg3);
+  );
+);
+
+// serialize
+// serialize - when reading or writing state
+// serialize
+@serialize
+
+// Read scale file to memory... Can't have more than 12 notes in the scale...
+memset(0,0,12);
+scale=0;
+fp=file_open(slider2);
+scalesize=file_mem(fp,0,12);
+file_close(fp);

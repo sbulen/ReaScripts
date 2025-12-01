@@ -10,8 +10,9 @@ Some of my Reaper Scripts.
 * sjrb-sin-mod.eel - A simple script that adds controller events in the form of a sin wave.  Frequency, starting phase, etc., are all configurable.  Can be used to drive cutoff filters, resonance, etc.  Note these curves are based on the duration of the note, not the project clock...  This gives each note a distinct shape, not necessarily tied to the project tempo (unless the note starts & ends on beat boundaries...).
 
 ## Effects:
+* sjrb-MIDI-Harmonist.jsfx - This .jsfx will generate chords in realtime, with features oriented towards jamming & improvisation.  Just specify a chord, scale & intervals, then play.
+* sjrb-MIDI-ChordGen.jsfx - This .jsfx will also generate chords in realtime, useful for exploring chords in different keys.  Just specify a chord, scale & intervals, then play.
 * sjrb-MIDI-CC-Compressor.jsfx - This .jsfx acts as a MIDI CC compressor and fattens up the CC curve, by increasing the input CC values.
-* sjrb-MIDI-ChordGen.jsfx - This .jsfx will generate chords in realtime.  Just specify a chord, scale & intervals, then play a key.
 
 ## Requirements:
 * Reaper...  No other libraries or utilities are required for these scripts.
