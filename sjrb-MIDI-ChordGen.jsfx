@@ -1,6 +1,6 @@
 desc: MIDI ChordGen
 author: sjrb
-version: 1.0
+version: 1.1
 about:
   MIDI Chord Generator.
 
@@ -80,7 +80,7 @@ function get_note_info(passed_note) (
 function spit_out_chord(note_info) (
   // Tied to the number of sliders we have to build the chord
   ix = -1;
-  while (ix <= 6) (
+  while (ix <= 5) (
     ix += 1;
     // Exclude NA (13)...
     (chord_spos[ix] < 13) ? (
