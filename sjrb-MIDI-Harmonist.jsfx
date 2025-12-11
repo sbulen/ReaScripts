@@ -1,6 +1,6 @@
 desc: MIDI Harmonist
 author: sjrb
-version: 1.0
+version: 1.1
 about:
   MIDI Harmonist.
 
@@ -14,7 +14,7 @@ tags: MIDI processing transposition transpose scales modes chords
 slider1:0<0,11,1{C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B}>Key
 slider2:/ix_scales:Major.txt:Scale
 slider3:1<0,1,1{No,Yes}>Play played note
-slider4:1<0,1,1{No,Yes}>Fudge passing notes
+slider4:1<0,2,1{No,Mode 1 - notes go sharp/flat,Mode 2 - notes snap to scale}>Fudge passing notes
 slider5:1<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
 slider6:7<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
 slider7:3<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
@@ -77,7 +77,7 @@ function get_note_info(passed_note) (
     spos += 1;
   );
   // Deal with passing notes...
-  ((fudge == 1) && (note_info["in_scale"] == 0)) ? (
+  ((fudge > 0) && (note_info["in_scale"] == 0)) ? (
     // cpos is beyond end of scale - closer to last scale note or octave?
     (spos == scalesize) ? (
       ((passed_cpos - scale[spos - 1]) <= (12 - passed_cpos)) ? (
@@ -100,6 +100,10 @@ function get_note_info(passed_note) (
         note_info["spos"] = spos;
         note_info["sf"] = passed_cpos - scale[spos];
       );
+    );
+    // Mode 2, snap to scale = just drop sharp/flat at this point
+    (fudge == 2) ? (
+      note_info["sf"] = 0;
     );
   );
   note_info;
@@ -132,7 +136,7 @@ function spit_out_chord(note_info) (
       // Quick sanity checks...
       note = check_bounds(note);
       vel = check_bounds(vel);
-      ((fudge == 1) || (note_info["in_scale"] == 1)) ? (
+      ((fudge > 0) || (note_info["in_scale"] == 1)) ? (
         midisend(mpos, msg1, note, vel);
       );
     );
