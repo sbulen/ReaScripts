@@ -1,0 +1,160 @@
+desc: MIDI Transposer
+author: sjrb
+version: 1.0
+about:
+  MIDI Transposer.
+
+  Map each note played to a new scale.  Root & scale must be provided for both the 'from' scale and the 'to' scale.
+
+  Scales are defined as Reaper scale .txt files, and should be in the ix_scales folder.
+  This script assumes one scale per file.
+
+tags: MIDI processing transposition transpose scales modes
+
+slider1:0<0,11,1{C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B}>From Key
+slider2:/ix_scales:Major.txt:From Scale
+slider3:1<0,2,1{No,Mode 1 - notes go sharp/flat,Mode 2 - notes snap to scale}>Fudge passing notes
+slider4:9<0,11,1{C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B}>To Key
+slider5:/ix_scales:Natural Minor.txt:To Scale
+
+// pins - set to none when there is no audio
+in_pin:none
+out_pin:none
+
+// init
+// init - executed once on load & playback start
+// init
+@init
+// Keep these safely away from each other...
+scale_from=0;
+scale_to=50;
+
+// slider
+// slider - executed whenever sliders change
+// slider
+@slider
+root_from = slider1;
+fudge = slider3;
+root_to = slider4;
+
+// block
+// block - executed once per block
+// block
+@block
+
+//
+// functions - local to @block
+//
+function get_note_info(passed_note) (
+  // Figure out chromatic offset from root_from
+  passed_cpos = passed_note%12 - root_from;
+  (passed_cpos < 0) ? (passed_cpos += 12);
+
+  // Is it within our specified scale?
+  // 0=false, 1=true
+  note_info["in_scale"] = 0;
+  note_info["spos"] = 0;
+  note_info["cpos"] = passed_cpos;
+  note_info["sf"] = 0;
+  spos = 0;
+  while ((note_info["in_scale"] == 0) && (spos < scalesize_from) && (passed_cpos >= scale_from[spos])) (
+    (passed_cpos == scale_from[spos]) ? (
+      note_info["in_scale"] = 1;
+      note_info["spos"] = spos;
+    );
+    spos += 1;
+  );
+  // Deal with passing notes...
+  ((fudge > 0) && (note_info["in_scale"] == 0)) ? (
+    // cpos is beyond end of scale - closer to last scale note or octave?
+    (spos == scalesize_from) ? (
+      ((passed_cpos - scale_from[spos - 1]) <= (12 - passed_cpos)) ? (
+        // sharp above prior scale note
+        note_info["spos"] = spos - 1;
+        note_info["sf"] = passed_cpos - scale_from[spos - 1];
+      ):(
+        // flat below 
+        note_info["spos"] = spos;
+        note_info["sf"] = passed_cpos - 12;
+      );
+    // cpos is between two notes in the scale - closer to which?
+    ):(
+      ((passed_cpos - scale_from[spos - 1]) <= (scale_from[spos] - passed_cpos)) ? (
+        // sharp above prior scale note
+        note_info["spos"] = spos - 1;
+        note_info["sf"] = passed_cpos - scale_from[spos - 1];
+      ):(
+        // flat below last scale note checked
+        note_info["spos"] = spos;
+        note_info["sf"] = passed_cpos - scale_from[spos];
+      );
+    );
+    // Mode 2, snap to scale = just drop sharp/flat at this point
+    (fudge == 2) ? (
+      note_info["sf"] = 0;
+    );
+  );
+  note_info;
+);
+
+// Check bounds - ensure it's between 0 & 127.
+function check_bounds(passed_val) (
+  (passed_val < 0) ? (passed_val = 0);
+  (passed_val > 127) ? (passed_val = 127);
+  passed_val;
+);
+
+// Build the new note, based on the deltas between the roots & scales at that scale position.
+function spit_out_note(note_info) (
+  // The only wrinkle here is that the old scale position may be bigger than the new scale
+  // size, e.g., if something wacky was requested like transposing from Major to a Pentatonic.
+  // Still, it might happen, so deal with it...
+  octs = 0;
+  spos = note_info["spos"];
+  (spos > scalesize_to) ? (
+    octs = floor(spos/scalesize_to);
+    spos = spos%scalesize_to;
+  );
+
+  // Factor in deltas between roots & scale positions
+  note = msg2 - root_from + root_to - note_info["cpos"] + (octs * 12) + scale_to[spos] + note_info["sf"];
+
+  // Quick sanity check, then spit it out...
+  note = check_bounds(note);
+  ((fudge > 0) || (note_info["in_scale"] == 1)) ? (
+    midisend(mpos, msg1, note, msg3);
+  );
+);
+
+//
+// Main logic starts here...
+//
+while (midirecv(mpos, msg1, msg2, msg3)) (
+  msg = msg1 >> 4;
+  ((msg == 8) || (msg == 9)) ? (
+    // Gotta note
+    note_info = get_note_info(msg2);
+    spit_out_note(note_info);
+  ):(
+    // Not a note, send it on
+    midisend(mpos, msg1, msg2, msg3);
+  );
+);
+
+// serialize
+// serialize - when reading or writing state
+// serialize
+@serialize
+
+// Read scale files to memory... Can't have more than 12 notes in a scale...
+memset(0,0,12);
+scale_from=0;
+fp=file_open(slider2);
+scalesize_from=file_mem(fp,0,12);
+file_close(fp);
+
+memset(50,0,12);
+scale_to=50;
+fp2=file_open(slider5);
+scalesize_to=file_mem(fp2,50,12);
+file_close(fp2);
