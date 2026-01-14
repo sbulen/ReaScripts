@@ -1,6 +1,6 @@
 desc: MIDI Transposer
 author: sjrb
-version: 1.0
+version: 1.1
 about:
   MIDI Transposer.
 
@@ -111,7 +111,7 @@ function spit_out_note(note_info) (
   // Still, it might happen, so deal with it...
   octs = 0;
   spos = note_info["spos"];
-  (spos > scalesize_to) ? (
+  (spos >= scalesize_to) ? (
     octs = floor(spos/scalesize_to);
     spos = spos%scalesize_to;
   );
