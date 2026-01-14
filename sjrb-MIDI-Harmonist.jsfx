@@ -1,6 +1,6 @@
 desc: MIDI Harmonist
 author: sjrb
-version: 1.1
+version: 1.2
 about:
   MIDI Harmonist.
 
@@ -15,11 +15,11 @@ slider1:0<0,11,1{C,C#/Db,D,D#/Eb,E,F,F#/Gb,G,G#/Ab,A,A#/Bb,B}>Key
 slider2:/ix_scales:Major.txt:Scale
 slider3:1<0,1,1{No,Yes}>Play played note
 slider4:1<0,2,1{No,Mode 1 - notes go sharp/flat,Mode 2 - notes snap to scale}>Fudge passing notes
-slider5:1<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider5:9<0,20,1{-8,-7,-6,-5,-4,-3,-2,U,2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
 slider6:7<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
-slider7:3<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider7:11<0,20,1{-8,-7,-6,-5,-4,-3,-2,U,2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
 slider8:6<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
-slider9:5<0,12,1{2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
+slider9:13<0,20,1{-8,-7,-6,-5,-4,-3,-2,U,2,3,4,5,6,7,8,9,10,11,12,13,NA}>Scale pos
 slider10:5<0,9,1{30%,40%,50%,60%,70%,80%,90%,100%,110%,120%}>Velocity
 
 // pins - set to none when there is no audio
@@ -42,11 +42,11 @@ chord_vel = 100;
 root = slider1;
 played = slider3;
 fudge = slider4;
-chord_spos[0] = slider5 + 1;
+chord_spos[0] = slider5 - 7;
 chord_vel[0] = (slider6 + 3) * 10;
-chord_spos[1] = slider7 + 1;
+chord_spos[1] = slider7 - 7;
 chord_vel[1] = (slider8 + 3) * 10;
-chord_spos[2] = slider9 + 1;
+chord_spos[2] = slider9 - 7;
 chord_vel[2] = (slider10 + 3) * 10;
 
 // block
@@ -128,8 +128,14 @@ function spit_out_chord(note_info) (
       scale_position = note_info["spos"] + chord_spos[ix];
       // Need to account for exceeding the # of notes in the scale (e.g., a 9th is an octave + a 2nd)
       octs = floor(scale_position/scalesize);
+      // If going negative we need to invert scale_position...
+      (scale_position >= 0) ? (
+        scale_position = scale_position%scalesize;
+      ):(
+        scale_position = scalesize - (scale_position%scalesize);
+      );
       // Here's where we finally do the scale lookup...
-      interval = scale[scale_position%scalesize];
+      interval = scale[scale_position];
       // Note the scales give you intervals relative to root, so you gotta offset from root...
       note = msg2 - note_info["cpos"] + (octs * 12) + interval + note_info["sf"];
       vel = floor(chord_vel[ix] * msg3 / 100);
