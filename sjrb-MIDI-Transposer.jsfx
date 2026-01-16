@@ -1,6 +1,6 @@
 desc: MIDI Transposer
 author: sjrb
-version: 1.1
+version: 1.2
 about:
   MIDI Transposer.
 
@@ -28,6 +28,9 @@ out_pin:none
 // Keep these safely away from each other...
 scale_from=0;
 scale_to=50;
+held_notes=0;
+new_scale=0;
+note_stack=100;
 
 // slider
 // slider - executed whenever sliders change
@@ -45,6 +48,76 @@ root_to = slider4;
 //
 // functions - local to @block
 //
+
+// Check if note is in stack
+// Return index if found, 0xFFFF if not found
+function note_in_stack (chan, note) (
+  search = (note * 256) + chan;
+  ix5 = 0;
+  found = 0xFFFF;
+  while ((ix5 < held_notes) && (found == 0xFFFF)) (
+    (note_stack[ix5] == search) ? (
+      found = ix5;
+    );
+    ix5 += 1;
+  );
+  found;
+);
+
+// Send note on & add to stack
+// Also check to ensure it hasn't been sent already - eat dupes
+function note_on (chan, note) (
+  ix4 = note_in_stack(chan, note);
+  (ix4 == 0xFFFF) ? (
+    // ok to send message...
+    midisend(mpos, msg1, note, msg3);
+    // now add to stack...
+    search = (note * 256) + chan;
+    note_stack[held_notes] = search;
+    held_notes += 1;
+  );
+);
+
+// Send note off & remove from stack
+function note_off (chan, note) (
+  ix3 = note_in_stack(chan, note);
+  (ix3 != 0xFFFF) ? (
+    // ok to send message...
+    midisend(mpos, msg1, note, 0);
+    // now remove from stack...
+    // If multiple, replace removed entry with last value in stack
+    held_notes -= 1;
+    (held_notes > 0) ? (
+      note_stack[ix3] = note_stack[held_notes];
+    );
+  );
+);
+
+// Sending on a note on or off?  Take appropriate action...
+function note_send (vpos, vstat, vnote, vvel) (
+  chan = vstat & 0x0F;
+  msg = vstat >> 4;
+  // A note on (9) w/vel of 0 is a note off
+  ((msg == 9) && (vvel > 0)) ? (
+    note_on(chan, vnote);
+  ):(
+    note_off(chan, vnote);
+  );
+);
+
+// Close out any open notes
+function all_notes_off () (
+  ix2 = 0;
+  loop (held_notes,
+    chanx = note_stack[ix2] & 0x0F;
+    notex = note_stack[ix2] >> 8;
+    statusx = 0x80 | chanx;
+    midisend(0x00, statusx, notex, 0x00);
+    ix2 += 1;
+  );
+  held_notes = 0;
+);
+
 function get_note_info(passed_note) (
   // Figure out chromatic offset from root_from
   passed_cpos = passed_note%12 - root_from;
@@ -122,7 +195,7 @@ function spit_out_note(note_info) (
   // Quick sanity check, then spit it out...
   note = check_bounds(note);
   ((fudge > 0) || (note_info["in_scale"] == 1)) ? (
-    midisend(mpos, msg1, note, msg3);
+    note_send(mpos, msg1, note, msg3);
   );
 );
 
@@ -133,6 +206,11 @@ while (midirecv(mpos, msg1, msg2, msg3)) (
   msg = msg1 >> 4;
   ((msg == 8) || (msg == 9)) ? (
     // Gotta note
+    // New scale? Close out any held notes...
+    (new_scale == 1) ? (
+      all_notes_off();
+      new_scale = 0;
+    );
     note_info = get_note_info(msg2);
     spit_out_note(note_info);
   ):(
@@ -158,3 +236,4 @@ scale_to=50;
 fp2=file_open(slider5);
 scalesize_to=file_mem(fp2,50,12);
 file_close(fp2);
+new_scale=1;
