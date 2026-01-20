@@ -1,7 +1,15 @@
-# ReaScripts
+# shawnb61's Reaper Scripts & JSFX
 
 ## Overview:
-Some of my Reaper Scripts.
+My Reaper Scripts & JSFX that I use & figured I'd share.
+
+## ReaPack Installation:
+
+This repository is available through the ReaPack REAPER extension, the free scripts/packages download manager made by cfillion. You can simply use ReaPack to batch download all scripts or scripts of your choice right from REAPER.  Further, you will automatically receive updates each time your synchronize packages.
+
+You need to add the link to this repo by importing the following index.xml link from the Import a repository window.
+
+https://raw.githubusercontent.com/sbulen/ReaScripts/refs/heads/master/index.xml
 
 ## Scripts:
 * sjrb-fractal-seq.eel - A fractal sequencer, that produces MIDI tracks in Reaper based on the Mandelbrot Set.
