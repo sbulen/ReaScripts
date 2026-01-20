@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="shawnb61's Reaper Scripts and JSFX" commit="2eb3bff8e379e8368e59257def6047e0c12951b4">
+<index version="1" name="shawnb61's Reaper Scripts and JSFX" commit="59cd81b09e87650981c62d43212e5f18c3a67aec">
   <category name="Composition">
     <reapack name="sjrb-fractal-seq.eel" type="script" desc="Mandelbrot set display &amp; navigator...">
       <metadata>
@@ -13,6 +13,9 @@
       </metadata>
       <version name="1.0.0" author="Shawn Bulen" time="2026-01-20T23:15:02Z">
         <source main="main">https://github.com/sbulen/ReaScripts/raw/2eb3bff8e379e8368e59257def6047e0c12951b4/Composition/sjrb-fractal-seq.eel</source>
+      </version>
+      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
+        <source main="main">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/Composition/sjrb-fractal-seq.eel</source>
       </version>
     </reapack>
   </category>
@@ -96,6 +99,9 @@
       <version name="1.0.0" author="Shawn Bulen" time="2026-01-20T23:15:02Z">
         <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/2eb3bff8e379e8368e59257def6047e0c12951b4/MIDI%20Editor/sjrb-horn-mod.eel</source>
       </version>
+      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/MIDI%20Editor/sjrb-horn-mod.eel</source>
+      </version>
     </reapack>
     <reapack name="sjrb-sin-mod.eel" type="script" desc="MIDI note modulation">
       <metadata>
@@ -109,6 +115,9 @@
       </metadata>
       <version name="1.0.0" author="Shawn Bulen" time="2026-01-20T23:15:02Z">
         <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/2eb3bff8e379e8368e59257def6047e0c12951b4/MIDI%20Editor/sjrb-sin-mod.eel</source>
+      </version>
+      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/MIDI%20Editor/sjrb-sin-mod.eel</source>
       </version>
     </reapack>
   </category>
@@ -125,6 +134,9 @@
       </metadata>
       <version name="1.0.0" author="Shawn Bulen" time="2026-01-20T23:15:02Z">
         <source main="main">https://github.com/sbulen/ReaScripts/raw/2eb3bff8e379e8368e59257def6047e0c12951b4/Surround/sjrb-surr-arc.eel</source>
+      </version>
+      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
+        <source main="main">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/Surround/sjrb-surr-arc.eel</source>
       </version>
     </reapack>
   </category>
