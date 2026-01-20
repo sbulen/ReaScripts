@@ -1,7 +1,7 @@
 //
 // @description Mandelbrot set display & navigator...
-// @version 1.0.0
-// @author Shawn Bulen
+// @version 1.0
+// @author shawnb61
 // @about This is a Fractal Sequencer.  It will display the Mandelbrot set, let you zoom around & select a line between any two points, then generate notes based on the numerical values between those two points.
 //
 
