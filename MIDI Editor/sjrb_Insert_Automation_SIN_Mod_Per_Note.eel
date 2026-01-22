@@ -1,6 +1,6 @@
 //
 // @description MIDI note modulation
-// @version 1.0
+// @version 1.1
 // @author shawnb61
 // @about  Will add sin curve modulation per note based on input info...  Not all voices do that, so adds a little character to dull tones...  This particular script works on all selected takes/tracks.  Not required to be working within the MIDI Editor, but your MIDI notes need to be selected.
 //

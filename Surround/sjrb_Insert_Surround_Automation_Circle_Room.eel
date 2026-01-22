@@ -1,6 +1,6 @@
 //
 // @description MIDI surround automation - move sound in an arc/circle
-// @version 1.0
+// @version 1.1
 // @author shawnb61
 // @about  Will generate automation to drive Reaper's X-Y coordinates in the surround panner.  If MIDI notes are selected, rules will be applied per note.  If no MIDI notes are selected, rules will be applied for duration of the items selected.
 //
