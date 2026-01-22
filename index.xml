@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="shawnb61's Scripts" commit="3517d241ad3a507e0e3169380aa0b0140bb9991e">
+<index version="1" name="shawnb61's Scripts" commit="7a869f5f4a5f51af22a559e5d84fd831bf07dfdc">
   <category name="Composition">
-    <reapack name="sjrb-fractal-seq.eel" type="script" desc="Mandelbrot set display &amp; navigator...">
+    <reapack name="sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel" type="script" desc="Mandelbrot set display &amp; navigator...">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -11,8 +11,8 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
-        <source main="main">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/Composition/sjrb-fractal-seq.eel</source>
+      <version name="1.1" author="shawnb61" time="2026-01-22T00:54:29Z">
+        <source main="main">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/Composition/sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel</source>
       </version>
     </reapack>
   </category>
@@ -83,7 +83,7 @@
     </reapack>
   </category>
   <category name="MIDI Editor">
-    <reapack name="sjrb-horn-mod.eel" type="script" desc="MIDI note horn-type modulation">
+    <reapack name="sjrb_Insert_Automation_Ramp_Mod_Per_Note.eel" type="script" desc="MIDI note horn-type modulation">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -93,14 +93,11 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
-        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/MIDI%20Editor/sjrb-horn-mod.eel</source>
-      </version>
-      <version name="1.1" author="shawnb61" time="2026-01-22T00:11:39Z">
-        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/3517d241ad3a507e0e3169380aa0b0140bb9991e/MIDI%20Editor/sjrb-horn-mod.eel</source>
+      <version name="1.2" author="shawnb61" time="2026-01-22T00:54:29Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/MIDI%20Editor/sjrb_Insert_Automation_Ramp_Mod_Per_Note.eel</source>
       </version>
     </reapack>
-    <reapack name="sjrb-sin-mod.eel" type="script" desc="MIDI note modulation">
+    <reapack name="sjrb_Insert_Automation_SIN_Mod_Per_Note.eel" type="script" desc="MIDI note modulation">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -110,13 +107,13 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
-        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/MIDI%20Editor/sjrb-sin-mod.eel</source>
+      <version name="1.1" author="shawnb61" time="2026-01-22T00:54:29Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/MIDI%20Editor/sjrb_Insert_Automation_SIN_Mod_Per_Note.eel</source>
       </version>
     </reapack>
   </category>
   <category name="Surround">
-    <reapack name="sjrb-surr-arc.eel" type="script" desc="MIDI surround automation - move sound in an arc/circle">
+    <reapack name="sjrb_Insert_Surround_Automation_Circle_Room.eel" type="script" desc="MIDI surround automation - move sound in an arc/circle">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -126,8 +123,8 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.0" author="shawnb61" time="2026-01-20T23:40:01Z">
-        <source main="main">https://github.com/sbulen/ReaScripts/raw/59cd81b09e87650981c62d43212e5f18c3a67aec/Surround/sjrb-surr-arc.eel</source>
+      <version name="1.1" author="shawnb61" time="2026-01-22T00:54:29Z">
+        <source main="main">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/Surround/sjrb_Insert_Surround_Automation_Circle_Room.eel</source>
       </version>
     </reapack>
   </category>
