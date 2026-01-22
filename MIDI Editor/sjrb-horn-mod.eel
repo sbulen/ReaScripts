@@ -1,6 +1,6 @@
 //
 // @description MIDI note horn-type modulation
-// @version 1.0
+// @version 1.1
 // @author shawnb61
 // @about  Will add mod wheel events over time, increasing vibrato on long-held notes.  Not all voices do that, so adds a little character to dull tones...  This particular script works on all selected takes/tracks.  Not required to be working within the MIDI Editor, but your MIDI notes need to be selected.
 //
@@ -17,7 +17,7 @@ controller = 1;
 #retvals = "";
 
 sprintf(#retvals, "%d,%d,%d,%f,%f,%d,%f,%d", minccval, maxccval, minnoteticks, startpct, endpct, shape_id, beztension, controller);
-GetUserInputs("Insert Modulations", 7, "Start CC value, End CC value, Min duration in ticks, Ramp start, Ramp end, Shape, Bez Tension, Controller", #retvals);
+GetUserInputs("Insert Modulations", 8, "Start CC value, End CC value, Min duration in ticks, Ramp start, Ramp end, Shape, Bez Tension, Controller", #retvals);
 
 match("%d,%d,%d,%f,%f,%d,%f,%d", #retvals, minccval, maxccval, minnoteticks, startpct, endpct, shape_id, beztension, controller);
 
