@@ -1,8 +1,17 @@
 //
 // @description Mandelbrot set display & navigator...
-// @version 1.1
+// @version 1.2
 // @author shawnb61
 // @about This is a Fractal Sequencer.  It will display the Mandelbrot set, let you zoom around & select a line between any two points, then generate notes based on the numerical values between those two points.
+//
+// Controls:
+// - Left-click = center & zoom
+// - Right-click = reset center & zoom
+// - Alt-left-click & drag = select line
+// - Alt-right-clck = reset line selection
+// - ENTER = generate notes
+//
+// Three new MIDI tracks are created: One track that reflects the number of iterations to reach the escape value, one track that reflects the real portion of the escape value, and one that reflects the imaginary portion of the escape value.
 //
 
 // Global config vars & defaults
