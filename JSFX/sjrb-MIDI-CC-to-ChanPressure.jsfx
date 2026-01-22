@@ -1,6 +1,6 @@
 desc: MIDI CC to Channel Pressure
 author: shawnb61
-version: 1.0
+version: 1.1
 about:
   MIDI CC to Channel Pressure
 
@@ -28,7 +28,7 @@ while (midirecv(mpos, msg1, msg2, msg3)) (
       // If requested, pass on original
       (eat == 0) ? midisend(mpos, xmsg1, xmsg2, msg3);
       // Transform to channel AT here, a 2-byte msg
-      midisend(mpos, 0xC0 | msg_chan, msg3);
+      midisend(mpos, 0xD0 | msg_chan, msg3);
     ):(
       // Not my message, pass it on
       midisend(mpos, xmsg1, xmsg2, msg3);
