@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="shawnb61's Scripts" commit="7a869f5f4a5f51af22a559e5d84fd831bf07dfdc">
+<index version="1" name="shawnb61's Scripts" commit="bd0d130797cf6e012cffb71d88482a3d4eaff967">
   <category name="Composition">
     <reapack name="sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel" type="script" desc="Mandelbrot set display &amp; navigator...">
       <metadata>
@@ -13,6 +13,9 @@
       </metadata>
       <version name="1.1" author="shawnb61" time="2026-01-22T00:54:29Z">
         <source main="main">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/Composition/sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel</source>
+      </version>
+      <version name="1.2" author="shawnb61" time="2026-01-22T03:53:44Z">
+        <source main="main">https://github.com/sbulen/ReaScripts/raw/bf187c9b63ab7d0d315365bdfa4312069570109a/Composition/sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel</source>
       </version>
     </reapack>
   </category>
@@ -31,6 +34,24 @@
       </metadata>
       <version name="1.2" author="shawnb61" time="2026-01-20T23:15:02Z">
         <source>https://github.com/sbulen/ReaScripts/raw/2eb3bff8e379e8368e59257def6047e0c12951b4/JSFX/sjrb-MIDI-CC-Compressor.jsfx</source>
+      </version>
+    </reapack>
+    <reapack name="sjrb-MIDI-CC-to-ChanPressure.jsfx" type="effect" desc="MIDI CC to Channel Pressure">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 MIDI CC to Channel Pressure\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 This .jsfx simply maps a specified CC to a channel pressure message. Same channel is assumed.\par}
+}
+]]></description>
+      </metadata>
+      <version name="1.0" author="shawnb61" time="2026-01-22T23:06:54Z">
+        <source>https://github.com/sbulen/ReaScripts/raw/b96a027e79379fa135c7c5fd743c05acc37f6653/JSFX/sjrb-MIDI-CC-to-ChanPressure.jsfx</source>
+      </version>
+      <version name="1.1" author="shawnb61" time="2026-01-22T23:27:20Z">
+        <source>https://github.com/sbulen/ReaScripts/raw/bd0d130797cf6e012cffb71d88482a3d4eaff967/JSFX/sjrb-MIDI-CC-to-ChanPressure.jsfx</source>
       </version>
     </reapack>
     <reapack name="sjrb-MIDI-ChordGen.jsfx" type="effect" desc="MIDI ChordGen">
@@ -83,7 +104,7 @@
     </reapack>
   </category>
   <category name="MIDI Editor">
-    <reapack name="sjrb_Insert_Automation_Ramp_Mod_Per_Note.eel" type="script" desc="MIDI note horn-type modulation">
+    <reapack name="sjrb_Insert_CCs_Ramp_Mod_Per_Note.eel" type="script" desc="MIDI note horn-type modulation">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -93,11 +114,11 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.2" author="shawnb61" time="2026-01-22T00:54:29Z">
-        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/MIDI%20Editor/sjrb_Insert_Automation_Ramp_Mod_Per_Note.eel</source>
+      <version name="1.3" author="shawnb61" time="2026-01-22T01:07:38Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/fd53e1802266cbd1e56d4e34d4e1ff81872c3287/MIDI%20Editor/sjrb_Insert_CCs_Ramp_Mod_Per_Note.eel</source>
       </version>
     </reapack>
-    <reapack name="sjrb_Insert_Automation_SIN_Mod_Per_Note.eel" type="script" desc="MIDI note modulation">
+    <reapack name="sjrb_Insert_CCs_SIN_Mod_Per_Note.eel" type="script" desc="MIDI note modulation">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
@@ -107,8 +128,8 @@
 }
 ]]></description>
       </metadata>
-      <version name="1.1" author="shawnb61" time="2026-01-22T00:54:29Z">
-        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/7a869f5f4a5f51af22a559e5d84fd831bf07dfdc/MIDI%20Editor/sjrb_Insert_Automation_SIN_Mod_Per_Note.eel</source>
+      <version name="1.2" author="shawnb61" time="2026-01-22T01:07:38Z">
+        <source main="midi_editor">https://github.com/sbulen/ReaScripts/raw/fd53e1802266cbd1e56d4e34d4e1ff81872c3287/MIDI%20Editor/sjrb_Insert_CCs_SIN_Mod_Per_Note.eel</source>
       </version>
     </reapack>
   </category>
