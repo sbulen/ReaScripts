@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="shawnb61's Scripts" commit="bd0d130797cf6e012cffb71d88482a3d4eaff967">
+<index version="1" name="shawnb61's Scripts" commit="63c9e2b642c289f6063e8a6d100b12c8beeb280f">
   <category name="Composition">
     <reapack name="sjrb_Mandelbrot_Set_MIDI_Note_Generator.eel" type="script" desc="Mandelbrot set display &amp; navigator...">
       <metadata>
@@ -52,6 +52,9 @@
       </version>
       <version name="1.1" author="shawnb61" time="2026-01-22T23:27:20Z">
         <source>https://github.com/sbulen/ReaScripts/raw/bd0d130797cf6e012cffb71d88482a3d4eaff967/JSFX/sjrb-MIDI-CC-to-ChanPressure.jsfx</source>
+      </version>
+      <version name="1.2" author="shawnb61" time="2026-01-23T16:39:45Z">
+        <source>https://github.com/sbulen/ReaScripts/raw/63c9e2b642c289f6063e8a6d100b12c8beeb280f/JSFX/sjrb-MIDI-CC-to-ChanPressure.jsfx</source>
       </version>
     </reapack>
     <reapack name="sjrb-MIDI-ChordGen.jsfx" type="effect" desc="MIDI ChordGen">
